@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="http://jelix.org/ns/module/1.0">
+    <info id="book_meeting@yourwebsite.undefined" name="book_meeting" createdate="2012-08-02">
+        <version date="2012-08-02">0.1pre</version>
+        <label lang="en_EN">book_meeting</label>
+        <description lang="en_EN" />
+        <license URL="">All rights reserved</license>
+        <copyright>2011 your name</copyright>
+        <creator name="your name" email="your-email@yourwebsite.undefined" active="true"/>
+        <!--<contributor name="hisname" email="hisemail@yoursite.undefined" active="true" since="" role=""/>-->
+        <homepageURL>http://www.yourwebsite.undefined</homepageURL>
+    </info>
+    <dependencies>
+        <jelix minversion="1.3.2" maxversion="1.3.*"/>
+    </dependencies>
+</module>
