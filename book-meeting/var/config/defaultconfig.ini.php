@@ -5,7 +5,8 @@
 startModule=book_meeting
 startAction="default:index"
 
-locale=en_EN
+locale=fr_FR
+availableLocales=fr_FR
 charset=UTF-8
 
 ; see http://www.php.net/manual/en/timezones.php for supported values
@@ -37,7 +38,7 @@ jacl2db.access=0
 jauth.access=0
 jauthdb.access=0
 junittests.access=0
-jWSDL.access=0
+jsoap.access=0
 
 book_meeting.access=2
 [coordplugins]
@@ -87,8 +88,6 @@ basePath=
 
 defaultEntrypoint=index
 
-entrypointExtension=.php
-
 ; action to show the 'page not found' error
 notfoundAct="jelix~error:notfound"
 
@@ -116,8 +115,6 @@ index="@classic"
 index=on
 xmlrpc=on
 jsonrpc=on
-rdf=on
-
 
 [jResponseHtml]
 ; list of active plugins for jResponseHtml

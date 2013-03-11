@@ -2,8 +2,8 @@
 /**
 * @package   book-meeting
 * @subpackage 
-* @author    your name
-* @copyright 2011 your name
+* @author    Priscille Quistin
+* @copyright 2013 Book Meeting
 * @link      http://www.yourwebsite.undefined
 * @license    All rights reserved
 */

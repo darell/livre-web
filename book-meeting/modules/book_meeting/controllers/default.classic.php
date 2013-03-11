@@ -2,8 +2,8 @@
 /**
 * @package   book-meeting
 * @subpackage book_meeting
-* @author    your name
-* @copyright 2011 your name
+* @author    Priscille Quistin
+* @copyright 2013 Book Meeting
 * @link      http://www.yourwebsite.undefined
 * @license    All rights reserved
 */
@@ -17,7 +17,7 @@ class defaultCtrl extends jController {
 
         // this is a call for the 'welcome' zone after creating a new application
         // remove this line !
-        $rep->body->assignZone('MAIN', 'jelix~check_install');
+        //$rep->body->assignZone('MAIN', 'jelix~check_install');
 
         return $rep;
     }

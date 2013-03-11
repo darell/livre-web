@@ -4,7 +4,7 @@
 * @subpackage  core_response
 * @author      Baptiste Toinot
 * @contributor Laurent Jouanneau
-* @copyright   2008 Baptiste Toinot, 2011 Laurent Jouanneau
+* @copyright   2008 Baptiste Toinot, 2011-2012 Laurent Jouanneau
 * @link        http://www.jelix.org
 * @licence     GNU Lesser General Public Licence see LICENCE file or http://www.gnu.org/licenses/lgpl.html
 */
@@ -52,13 +52,13 @@ class jResponseSitemap extends jResponse {
     * List of URLs for a sitemap index file
     * @var array()
     */
-    protected $urlSitemap;
+    protected $urlSitemap = array();
 
     /**
     * List of URLs for a sitemap file
     * @var array()
     */
-    protected $urlList;
+    protected $urlList = array();
 
     /**
      * The template container
@@ -89,9 +89,15 @@ class jResponseSitemap extends jResponse {
      * @return boolean true if generation is ok, else false
      */
     final public function output() {
+        
+        if($this->_outputOnlyHeaders){
+            $this->sendHttpHeaders();
+            return true;
+        }
+        
         $this->_httpHeaders['Content-Type'] = 'application/xml;charset=UTF-8';
 
-        if (!is_null($this->urlSitemap)) {
+        if (count($this->urlSitemap)) {
             $head = '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
             $foot = '</sitemapindex>';
             $this->contentTpl = 'jelix~sitemapindex';
@@ -116,16 +122,16 @@ class jResponseSitemap extends jResponse {
      * @param string $lastmod The date of last modification of the file
      * @param string $changefreq How frequently the page is likely to change
      * @param string $priority The priority of this URL relative to other URLs
-     * @return void
+     * @return boolean true if addition is ok, else false
      */
     public function addUrl($loc, $lastmod = null, $changefreq = null, $priority = null) {
 
         if (isset($loc[2048]) || count($this->urlList) >= $this->maxUrl) {
             return false;
         }
-        global $gJCoord;
+
         $url = new jSitemapUrl();
-        $url->loc = $gJCoord->request->getServerURI() . $loc;
+        $url->loc = jApp::coord()->request->getServerURI() . $loc;
 
         if (($timestamp = strtotime($lastmod))) {
             $url->lastmod = date('c', $timestamp);
@@ -140,28 +146,30 @@ class jResponseSitemap extends jResponse {
         }
 
         $this->urlList[] = $url;
+        return true;
     }
 
     /**
      * add a URL in a sitemap file
      * @param string $loc URL of sitemap file
      * @param string $lastmod The date of last modification of the sitemap file
-     * @return void
+     * @return boolean true if addition is ok, else false
      */
     public function addSitemap($loc, $lastmod = null) {
 
         if (isset($loc[2048]) || count($this->urlSitemap) >= $this->maxSitemap) {
             return false;
         }
-        global $gJCoord;
+
         $sitemap = new jSitemapIndex();
-        $sitemap->loc = $gJCoord->request->getServerURI() . $loc;
+        $sitemap->loc = jApp::coord()->request->getServerURI() . $loc;
 
         if (($timestamp = strtotime($lastmod))) {
             $sitemap->lastmod = date('c', $timestamp);
         }
 
         $this->urlSitemap[] = $sitemap;
+        return true;
     }
 
     /**
@@ -205,27 +213,39 @@ class jResponseSitemap extends jResponse {
      * @return array
      */
     protected function _parseUrlsXml() {
-        global $gJConfig;
 
         $urls = array();
-        $significantFile = $gJConfig->urlengine['significantFile'];
-        $entryPoint = $gJConfig->urlengine['defaultEntrypoint'];
-        $snp = $gJConfig->urlengine['urlScriptIdenc'];
 
-        $file = jApp::tempPath('compiled/urlsig/' . $significantFile .
-                '.' . rawurlencode($entryPoint) . '.entrypoint.php');
+        $conf = &jApp::config()->urlengine;
+        $significantFile = $conf['significantFile'];
+        $basePath = $conf['basePath'];
+        $epExt = ($conf['multiview'] ? '.php':'');
+
+        $file = jApp::tempPath('compiled/urlsig/' . $significantFile . '.creationinfos_15.php');
 
         if (file_exists($file)) {
             require $file;
-            $dataParseUrl = $GLOBALS['SIGNIFICANT_PARSEURL'][$snp];
-            foreach ($dataParseUrl as $k => $infoparsing) {
-                if ($k == 0) {
+            foreach ($GLOBALS['SIGNIFICANT_CREATEURL'] as $selector => $createinfo) {
+                if ($createinfo[0] != 1 && $createinfo[0] != 4) {
                     continue;
                 }
-                // it is not really relevant to get URL that are not complete
-                // but it is difficult to know automatically what are real URLs
-                if (preg_match('/^([^\(]*)/', substr($infoparsing[2], 2, -2), $matches)) {
-                    $urls[] = $matches[1];
+                if ($createinfo[0] == 4) {
+                    foreach ($createinfo as $k => $createinfo2) {
+                        if ($k == 0) continue;
+
+                        if ($createinfo2[2] == true // https needed -> we don't take this url. FIXME
+                         ||count($createinfo2[3]) ) { // there are some dynamique parameters, we don't take it this we cannot guesse dynamic parameters
+                            continue;
+                        }
+                        $urls[] = $basePath.($createinfo2[1]?$createinfo2[1].$epExt:'').$createinfo2[5];
+                    }
+                }
+                else if ($createinfo[2] == true // https needed -> we don't take this url. FIXME
+                         ||  count($createinfo[3]) ) { // there are some dynamique parameters, we don't take it this we cannot guesse dynamic parameters
+                    continue;
+                }
+                else {
+                    $urls[] = $basePath.($createinfo[1]?$createinfo[1].$epExt:'').$createinfo[5];
                 }
             }
         }

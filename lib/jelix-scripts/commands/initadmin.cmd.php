@@ -13,11 +13,10 @@ class initadminCommand extends JelixScriptCommand {
     public  $name = 'initadmin';
     public  $allowed_options=array('-noauthdb'=>false,
                                    '-noacl2db'=>false,
-                                   '-profile'=>true,
-                                   '-v'=>false);
+                                   '-profile'=>true);
     public  $allowed_parameters=array('entrypoint'=>true);
 
-    public  $syntaxhelp = "[-v] [-noauthdb] [-noacl2db] [-profile a_jdb_profile] entrypoint";
+    public  $syntaxhelp = "[-noauthdb] [-noacl2db] [-profile a_jdb_profile] entrypoint";
     public  $help='';
 
     function __construct($config){
@@ -77,10 +76,9 @@ class initadminCommand extends JelixScriptCommand {
         $inifile = new jIniMultiFilesModifier(jApp::configPath('defaultconfig.ini.php'),
                                           jApp::configPath($ep['config']));
 
-
         $params = array();
-        $this->createFile(jApp::appPath('responses/adminHtmlResponse.class.php'),'responses/adminHtmlResponse.class.php.tpl',$params);
-        $this->createFile(jApp::appPath('responses/adminLoginHtmlResponse.class.php'),'responses/adminLoginHtmlResponse.class.php.tpl',$params);
+        $this->createFile(jApp::appPath('responses/adminHtmlResponse.class.php'),'responses/adminHtmlResponse.class.php.tpl',$params, "Response for admin interface");
+        $this->createFile(jApp::appPath('responses/adminLoginHtmlResponse.class.php'),'responses/adminLoginHtmlResponse.class.php.tpl',$params, "Response for login page");
         $inifile->setValue('html', 'adminHtmlResponse', 'responses');
         $inifile->setValue('htmlauth', 'adminLoginHtmlResponse', 'responses');
 
@@ -94,19 +92,21 @@ class initadminCommand extends JelixScriptCommand {
             $inifile->setValue('modulesPath', 'lib:jelix-admin-modules/,'.$modulePath, 0, null, true);
         }
 
+        $installConfig->setValue('jacl.installed', '0', $entrypoint);
+        $inifile->setValue('jacl.access', '0', 'modules');
         $installConfig->setValue('jacldb.installed', '0', $entrypoint);
         $inifile->setValue('jacldb.access', '0', 'modules');
         $installConfig->setValue('junittests.installed', '0', $entrypoint);
         $inifile->setValue('junittests.access', '0', 'modules');
-        $installConfig->setValue('jWSDL.installed', '0', $entrypoint);
-        $inifile->setValue('jWSDL.access', '0', 'modules');
+        $installConfig->setValue('jsoap.installed', '0', $entrypoint);
+        $inifile->setValue('jsoap.access', '0', 'modules');
 
         $urlconf = $inifile->getValue($entrypoint, 'simple_urlengine_entrypoints', null, true);
         if ($urlconf === null || $urlconf == '') {
             // in defaultconfig
-            $inifile->setValue($entrypoint, 'jacl2db_admin~*@classic, jauthdb_admin~*@classic, master_admin~*@classic', 'simple_urlengine_entrypoints', null, true);
+            $inifile->setValue($entrypoint, 'jacl2db_admin~*@classic, jauthdb_admin~*@classic, master_admin~*@classic, jpref_admin~*@classic', 'simple_urlengine_entrypoints', null, true);
             // in the config of the entry point
-            $inifile->setValue($entrypoint, 'jacl2db~*@classic, jauth~*@classic, jacl2db_admin~*@classic, jauthdb_admin~*@classic, master_admin~*@classic', 'simple_urlengine_entrypoints');
+            $inifile->setValue($entrypoint, 'jacl2db~*@classic, jauth~*@classic, jacl2db_admin~*@classic, jauthdb_admin~*@classic, master_admin~*@classic, jpref_admin~*@classic', 'simple_urlengine_entrypoints');
         }
         else {
             $urlconf2 = $inifile->getValue($entrypoint, 'simple_urlengine_entrypoints');
@@ -127,6 +127,8 @@ class initadminCommand extends JelixScriptCommand {
                 $urlconf2 .= ',jacl2db~*@classic';
             if(strpos($urlconf2, 'jauth~*@classic') === false)
                 $urlconf2 .= ',jauth~*@classic';
+            if(strpos($urlconf2, 'jpref_admin~*@classic') === false)
+                $urlconf2 .= ',jpref_admin~*@classic';
 
             $inifile->setValue($entrypoint, $urlconf, 'simple_urlengine_entrypoints', null, true);
             $inifile->setValue($entrypoint, $urlconf2, 'simple_urlengine_entrypoints');
@@ -139,7 +141,7 @@ class initadminCommand extends JelixScriptCommand {
         $inifile->save();
 
         require_once (JELIX_LIB_PATH.'installer/jInstaller.class.php');
-        $verbose = $this->getOption("-v");
+        $verbose = $this->verbose();
 
         $reporter = new textInstallReporter(($verbose? 'notice':'warning'));
         $installer = new jInstaller($reporter);
@@ -182,5 +184,7 @@ class initadminCommand extends JelixScriptCommand {
             $inifile->setValue('jacl2db_admin.access', '0', 'modules');
             $inifile->save();
         }
+        
+        $installer->installModules(array('jpref_admin'), $entrypoint.'.php');
     }
 }

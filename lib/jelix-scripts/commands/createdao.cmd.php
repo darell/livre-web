@@ -5,7 +5,7 @@
 * @contributor Nicolas Jeudy (patch ticket #99)
 * @contributor Gwendal Jouannic (patch ticket #615)
 * @contributor Loic Mathaud
-* @copyright   2005-2010 Laurent Jouanneau
+* @copyright   2005-2012 Laurent Jouanneau
 * @copyright   2007 Nicolas Jeudy, 2008 Gwendal Jouannic, 2008 Loic Mathaud
 * @link        http://www.jelix.org
 * @licence     GNU General Public Licence see LICENCE file or http://www.gnu.org/licenses/gpl.html
@@ -58,12 +58,14 @@ class createdaoCommand extends JelixScriptCommand {
 
        $this->loadAppConfig();
 
-       $path= $this->getModulePath($this->_parameters['module']);
+       $module = $this->_parameters['module'];
+       $path = $this->getModulePath($module);
 
        $filename= $path.'daos/';
        $this->createDir($filename);
 
-       $filename.=strtolower($this->_parameters['name']).'.dao.xml';
+       $daofile = strtolower($this->_parameters['name']).'.dao.xml';
+       $filename.= $daofile;
 
        $profile = $this->getOption('-profile');
 
@@ -73,7 +75,7 @@ class createdaoCommand extends JelixScriptCommand {
             $param['table'] = $param['name'];
 
        if($this->getOption('-empty')){
-          $this->createFile($filename,'module/dao_empty.xml.tpl',$param);
+          $this->createFile($filename, 'module/dao_empty.xml.tpl', $param, "Empty DAO");
        }else{
 
          $sequence = $this->getParam('sequence', '');
@@ -108,17 +110,21 @@ class createdaoCommand extends JelixScriptCommand {
             if ($prop->sequence) {
                  $properties.=' sequence="'.$prop->sequence.'"';
             }
+            // form generator use this feature
+            if ($prop->comment) {
+                 $properties.=' comment="'.htmlspecialchars(utf8_encode($prop->comment)).'"';
+            }
             $properties.='/>';
 
          }
 
          if($primarykeys == '') {
-            throw new Exception("The table has no primary keys. A dao needs a primary key on the table to be defined.");
+            throw new Exception("The table ".$param['table']." has no primary keys. A dao needs a primary key on the table to be defined.");
          }
 
          $param['properties']=$properties;
          $param['primarykeys']=$primarykeys;
-         $this->createFile($filename,'module/dao.xml.tpl',$param);
+         $this->createFile($filename, 'module/dao.xml.tpl', $param, "DAO");
        }
     }
 }

@@ -2,8 +2,8 @@
 /**
 * @package   book-meeting
 * @subpackage 
-* @author    your name
-* @copyright 2011 your name
+* @author    Priscille Quistin
+* @copyright 2013 Book Meeting
 * @link      http://www.yourwebsite.undefined
 * @license    All rights reserved
 */
@@ -13,9 +13,10 @@ require (JELIX_LIB_CORE_PATH.'request/jClassicRequest.class.php');
 
 checkAppOpened();
 
-$config_file = 'index/config.ini.php';
+jApp::loadConfig('index/config.ini.php');
 
-$jelix = new jCoordinator($config_file);
-$jelix->process(new jClassicRequest());
+jApp::setCoord(new jCoordinator());
+jApp::coord()->process(new jClassicRequest());
+
 
 

@@ -33,11 +33,13 @@ class jConfig {
      */
     static public function load($configFile){
         $config=array();
-        $file = jApp::tempPath();
-        if(BYTECODE_CACHE_EXISTS)
-            $file .= str_replace('/','~',$configFile).'.conf.php';
+        $file = jApp::tempPath().str_replace('/','~',$configFile);
+
+        if (BYTECODE_CACHE_EXISTS)
+            $file .= '.conf.php';
         else
-            $file .= str_replace('/','~',$configFile).'.resultini.php';
+            $file .= '.resultini.php';
+
         $compil=false;
         if(!file_exists($file)){
             // no cache, let's compile
@@ -56,9 +58,9 @@ class jConfig {
                     include($file);
                     $config = (object) $config;
                 }else{
-                    $config = parse_ini_file($file,true);
-                    $config = (object) $config;
+                    $config = jelix_read_ini($file);
                 }
+
                 // we check all directories to see if it has been modified
                 if($config->compilation['checkCacheFiletime']){
                     foreach($config->_allBasePath as $path){

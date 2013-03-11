@@ -2,21 +2,20 @@
 /**
 * @package   book-meeting
 * @subpackage
-* @author    your name
-* @copyright 2011 your name
+* @author    Priscille Quistin
+* @copyright 2013 Book Meeting
 * @link      http://www.yourwebsite.undefined
 * @license    All rights reserved
 */
 
-$appPath = dirname (__FILE__).'/';
-require (realpath($appPath.'../lib/jelix/').'/'.'init.php');
+require (realpath(__DIR__.'/../lib/jelix/').'/'.'init.php');
 
 jApp::initPaths(
-    $appPath,
-    $appPath.'www/',
-    $appPath.'var/',
-    $appPath.'var/log/',
-    $appPath.'var/config/',
-    $appPath.'scripts/'
+    __DIR__.'/',
+    __DIR__.'/www/',
+    __DIR__.'/var/',
+    __DIR__.'/var/log/',
+    __DIR__.'/var/config/',
+    __DIR__.'/scripts/'
 );
-jApp::setTempBasePath(realpath($appPath.'../temp/book-meeting/').'/');
+jApp::setTempBasePath(realpath(__DIR__.'/../temp/book-meeting/').'/');
